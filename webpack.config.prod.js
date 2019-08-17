@@ -1,6 +1,7 @@
 var path = require("path");
 var webpack = require("webpack");
 var MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
   mode: "production",
@@ -8,13 +9,17 @@ module.exports = {
   output: {
     path: path.join(__dirname, "build"),
     filename: "bundle.js",
-    publicPath: "/static/"
+    publicPath: "/react-jsonschema-form/"
   },
   plugins: [
+    new MonacoWebpackPlugin({
+      languages: ['json']
+    }),
     new MiniCssExtractPlugin({filename: "styles.css", allChunks: true}),
     new webpack.DefinePlugin({
       "process.env": {
-        NODE_ENV: JSON.stringify("production")
+        NODE_ENV: JSON.stringify("production"),
+        SHOW_NETLIFY_BADGE: JSON.stringify(process.env.SHOW_NETLIFY_BADGE)
       }
     })
   ],

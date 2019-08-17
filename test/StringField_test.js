@@ -1,6 +1,6 @@
 import React from "react";
 import { expect } from "chai";
-import { Simulate } from "react-addons-test-utils";
+import { Simulate } from "react-dom/test-utils";
 
 import { parseDateString, toDateString } from "../src/utils";
 import { utcToLocal } from "../src/components/widgets/DateTimeWidget";
@@ -349,6 +349,69 @@ describe("StringField", () => {
       });
 
       expect(node.querySelector("#custom")).to.exist;
+    });
+
+    it("should render a select element with first option 'false' if the default value is false", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+            enum: [false, true],
+            default: false,
+          },
+        },
+      };
+
+      const { node } = createFormComponent({
+        schema,
+      });
+
+      const options = node.querySelectorAll("option");
+      expect(options[0].innerHTML).eql("false");
+      expect(options.length).eql(2);
+    });
+
+    it("should render a select element and the option's length is equal the enum's length, if set the enum and the default value is empty.", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+            enum: ["", "1"],
+            default: "",
+          },
+        },
+      };
+
+      const { node } = createFormComponent({
+        schema,
+      });
+
+      const options = node.querySelectorAll("option");
+      expect(options[0].innerHTML).eql("");
+      expect(options.length).eql(2);
+    });
+
+    it("should render only one empty option when the default value is empty.", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+            enum: [""],
+            default: "",
+          },
+        },
+      };
+
+      const { node } = createFormComponent({
+        schema,
+      });
+
+      const options = node.querySelectorAll("option");
+      expect(options[0].innerHTML).eql("");
+      expect(options.length).eql(1);
     });
   });
 
@@ -1503,7 +1566,7 @@ describe("StringField", () => {
   describe("FileWidget", () => {
     const initialValue = "data:text/plain;name=file1.txt;base64,dGVzdDE=";
 
-    it("should render a color field", () => {
+    it("should render a file field", () => {
       const { node } = createFormComponent({
         schema: {
           type: "string",
@@ -1518,11 +1581,10 @@ describe("StringField", () => {
       const { comp } = createFormComponent({
         schema: {
           type: "string",
-          format: "color",
+          format: "data-url",
           default: initialValue,
         },
       });
-
       expect(comp.state.formData).eql(initialValue);
     });
 
@@ -1554,7 +1616,52 @@ describe("StringField", () => {
       );
     });
 
+    it("should encode file name with encodeURIComponent", () => {
+      const nonUriEncodedValue = "fileáéí óú1.txt";
+      const uriEncodedValue = "file%C3%A1%C3%A9%C3%AD%20%C3%B3%C3%BA1.txt";
+
+      sandbox.stub(window, "FileReader").returns({
+        set onload(fn) {
+          fn({ target: { result: "data:text/plain;base64,x=" } });
+        },
+        readAsDataUrl() {},
+      });
+
+      const { comp, node } = createFormComponent({
+        schema: {
+          type: "string",
+          format: "data-url",
+        },
+      });
+
+      Simulate.change(node.querySelector("[type=file]"), {
+        target: {
+          files: [{ name: nonUriEncodedValue, size: 1, type: "type" }],
+        },
+      });
+
+      return new Promise(setImmediate).then(() =>
+        expect(comp.state.formData).eql(
+          "data:text/plain;name=" + uriEncodedValue + ";base64,x="
+        )
+      );
+    });
+
     it("should render the widget with the expected id", () => {
+      const { node } = createFormComponent({
+        schema: {
+          type: "string",
+          format: "data-url",
+        },
+        uiSchema: {
+          "ui:options": { accept: ".pdf" },
+        },
+      });
+
+      expect(node.querySelector("[type=file]").accept).eql(".pdf");
+    });
+
+    it("should render the file widget with accept attribute", () => {
       const { node } = createFormComponent({
         schema: {
           type: "string",

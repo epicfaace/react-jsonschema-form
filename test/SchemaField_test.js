@@ -1,6 +1,6 @@
 import React from "react";
 import { expect } from "chai";
-import { Simulate } from "react-addons-test-utils";
+import { Simulate } from "react-dom/test-utils";
 
 import SchemaField from "../src/components/fields/SchemaField";
 import TitleField from "../src/components/fields/TitleField";
@@ -108,7 +108,7 @@ describe("SchemaField", () => {
               receivedProps = props;
             }
             render() {
-              return <div />;
+              return null;
             }
           },
         },
@@ -304,7 +304,7 @@ describe("SchemaField", () => {
       }
     }
 
-    it("should render it's own errors", () => {
+    it("should render its own errors", () => {
       const { node } = createFormComponent({
         schema,
         uiSchema,
@@ -313,7 +313,7 @@ describe("SchemaField", () => {
       submit(node);
 
       const matches = node.querySelectorAll(
-        "form > .form-group > div > div > div > .error-detail .text-danger"
+        "form > .form-group > div > .error-detail .text-danger"
       );
       expect(matches).to.have.length.of(1);
       expect(matches[0].textContent).to.eql("container");

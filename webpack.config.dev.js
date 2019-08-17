@@ -1,9 +1,10 @@
 var path = require("path");
 var webpack = require("webpack");
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
   mode: "development",
-  devtool: "eval",
+  devtool: "source-map",
   entry: [
     "webpack-hot-middleware/client?reload=true",
     "./playground/app"
@@ -14,6 +15,9 @@ module.exports = {
     publicPath: "/static/"
   },
   plugins: [
+    new MonacoWebpackPlugin({
+      languages: ['json']
+    }),
     new webpack.HotModuleReplacementPlugin(),
   ],
   module: {

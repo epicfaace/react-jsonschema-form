@@ -1,46 +1,21 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
-import { UnControlled as CodeMirror } from "react-codemirror2";
-import "codemirror/mode/javascript/javascript";
+import MonacoEditor from "react-monaco-editor";
 
 import { shouldRender } from "../src/utils";
 import { samples } from "./samples";
 import Form from "../src";
 
-// Import a few CodeMirror themes; these are used to match alternative
-// bootstrap ones.
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/dracula.css";
-import "codemirror/theme/blackboard.css";
-import "codemirror/theme/mbo.css";
-import "codemirror/theme/ttcn.css";
-import "codemirror/theme/solarized.css";
-import "codemirror/theme/monokai.css";
-import "codemirror/theme/eclipse.css";
-
 const log = type => console.log.bind(console, type);
-const fromJson = json => JSON.parse(json);
 const toJson = val => JSON.stringify(val, null, 2);
 const liveSettingsSchema = {
   type: "object",
   properties: {
     validate: { type: "boolean", title: "Live validation" },
     disable: { type: "boolean", title: "Disable whole form" },
+    omitExtraData: { type: "boolean", title: "Omit extra data" },
+    liveOmit: { type: "boolean", title: "Live omit" },
   },
-};
-const cmOptions = {
-  theme: "default",
-  height: "auto",
-  viewportMargin: Infinity,
-  mode: {
-    name: "javascript",
-    json: true,
-    statementIndent: 2,
-  },
-  lineNumbers: true,
-  lineWrapping: true,
-  indentWithTabs: false,
-  tabSize: 2,
 };
 const themes = {
   default: {
@@ -131,6 +106,13 @@ const themes = {
   },
 };
 
+const monacoEditorOptions = {
+  minimap: {
+    enabled: false,
+  },
+  automaticLayout: true,
+};
+
 class GeoPosition extends Component {
   constructor(props) {
     super(props);
@@ -192,22 +174,28 @@ class Editor extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return shouldRender(this, nextProps, nextState);
+    if (this.state.valid) {
+      return (
+        JSON.stringify(JSON.parse(nextProps.code)) !==
+        JSON.stringify(JSON.parse(this.state.code))
+      );
+    }
+    return false;
   }
 
-  onCodeChange = (editor, metadata, code) => {
-    this.setState({ valid: true, code });
-    setImmediate(() => {
-      try {
-        this.props.onChange(fromJson(this.state.code));
-      } catch (err) {
-        this.setState({ valid: false, code });
-      }
-    });
+  onCodeChange = code => {
+    try {
+      const parsedCode = JSON.parse(code);
+      this.setState({ valid: true, code }, () =>
+        this.props.onChange(parsedCode)
+      );
+    } catch (err) {
+      this.setState({ valid: false, code });
+    }
   };
 
   render() {
-    const { title, theme } = this.props;
+    const { title } = this.props;
     const icon = this.state.valid ? "ok" : "remove";
     const cls = this.state.valid ? "valid" : "invalid";
     return (
@@ -216,11 +204,13 @@ class Editor extends Component {
           <span className={`${cls} glyphicon glyphicon-${icon}`} />
           {" " + title}
         </div>
-        <CodeMirror
+        <MonacoEditor
+          language="json"
           value={this.state.code}
+          theme="vs-light"
           onChange={this.onCodeChange}
-          autoCursor={false}
-          options={Object.assign({}, cmOptions, { theme })}
+          height={400}
+          options={monacoEditorOptions}
         />
       </div>
     );
@@ -332,6 +322,8 @@ class App extends Component {
       liveSettings: {
         validate: true,
         disable: false,
+        omitExtraData: false,
+        liveOmit: false,
       },
       shareURL: null,
     };
@@ -472,13 +464,16 @@ class App extends Component {
               ObjectFieldTemplate={ObjectFieldTemplate}
               liveValidate={liveSettings.validate}
               disabled={liveSettings.disable}
+              omitExtraData={liveSettings.omitExtraData}
+              liveOmit={liveSettings.liveOmit}
               schema={schema}
               uiSchema={uiSchema}
               formData={formData}
               onChange={this.onFormDataChange}
-              onSubmit={({ formData }) =>
-                console.log("submitted formData", formData)
-              }
+              onSubmit={({ formData }, e) => {
+                console.log("submitted formData", formData);
+                console.log("submit event", e);
+              }}
               fields={{ geo: GeoPosition }}
               validate={validate}
               onBlur={(id, value) =>
@@ -504,6 +499,27 @@ class App extends Component {
               </div>
             </Form>
           )}
+        </div>
+        <div className="col-sm-12">
+          <p style={{ textAlign: "center" }}>
+            Powered by{" "}
+            <a href="https://github.com/mozilla-services/react-jsonschema-form">
+              react-jsonschema-form
+            </a>
+            . Bootstrap themes courtesy of{" "}
+            <a href="http://bootswatch.com/">Bootswatch</a> and{" "}
+            <a href="https://github.com/aalpern/bootstrap-solarized/">
+              bootstrap-solarized
+            </a>
+            . Bootstrap version v3.3.6.
+            {process.env.SHOW_NETLIFY_BADGE === "true" && (
+              <div style={{ float: "right" }}>
+                <a href="https://www.netlify.com">
+                  <img src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg" />
+                </a>
+              </div>
+            )}
+          </p>
         </div>
       </div>
     );

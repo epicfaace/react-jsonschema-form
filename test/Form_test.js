@@ -1,14 +1,17 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import React from "react";
-import { renderIntoDocument, Simulate } from "react-addons-test-utils";
+import { renderIntoDocument, Simulate } from "react-dom/test-utils";
 import { findDOMNode } from "react-dom";
+import { Portal } from "react-portal";
+import { createRef } from "create-react-ref";
 
 import Form from "../src";
 import {
   createComponent,
   createFormComponent,
   createSandbox,
+  setProps,
 } from "./test_utils";
 
 describe("Form", () => {
@@ -541,6 +544,92 @@ describe("Form", () => {
       expect(node.querySelector("#root_children_0_name")).to.exist;
     });
 
+    it("should follow recursive references", () => {
+      const schema = {
+        definitions: {
+          bar: { $ref: "#/definitions/qux" },
+          qux: { type: "string" },
+        },
+        type: "object",
+        required: ["foo"],
+        properties: {
+          foo: { $ref: "#/definitions/bar" },
+        },
+      };
+      const { node } = createFormComponent({ schema });
+
+      expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
+    });
+
+    it("should follow multiple recursive references", () => {
+      const schema = {
+        definitions: {
+          bar: { $ref: "#/definitions/bar2" },
+          bar2: { $ref: "#/definitions/qux" },
+          qux: { type: "string" },
+        },
+        type: "object",
+        required: ["foo"],
+        properties: {
+          foo: { $ref: "#/definitions/bar" },
+        },
+      };
+      const { node } = createFormComponent({ schema });
+
+      expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
+    });
+
+    it("should handle recursive references to deep schema definitions", () => {
+      const schema = {
+        definitions: {
+          testdef: {
+            $ref: "#/definitions/testdefref",
+          },
+          testdefref: {
+            type: "object",
+            properties: {
+              bar: { type: "string" },
+            },
+          },
+        },
+        type: "object",
+        properties: {
+          foo: { $ref: "#/definitions/testdef/properties/bar" },
+        },
+      };
+
+      const { node } = createFormComponent({ schema });
+
+      expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
+    });
+
+    it("should handle multiple recursive references to deep schema definitions", () => {
+      const schema = {
+        definitions: {
+          testdef: {
+            $ref: "#/definitions/testdefref1",
+          },
+          testdefref1: {
+            $ref: "#/definitions/testdefref2",
+          },
+          testdefref2: {
+            type: "object",
+            properties: {
+              bar: { type: "string" },
+            },
+          },
+        },
+        type: "object",
+        properties: {
+          foo: { $ref: "#/definitions/testdef/properties/bar" },
+        },
+      };
+
+      const { node } = createFormComponent({ schema });
+
+      expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
+    });
+
     it("should priorize definition over schema type property", () => {
       // Refs bug #140
       const schema = {
@@ -688,15 +777,15 @@ describe("Form", () => {
         foo: "bar",
       };
       const onSubmit = sandbox.spy();
+      const event = { type: "submit" };
       const { comp, node } = createFormComponent({
         schema,
         formData,
         onSubmit,
       });
 
-      Simulate.submit(node);
-
-      sinon.assert.calledWithMatch(onSubmit, comp.state);
+      Simulate.submit(node, event);
+      sinon.assert.calledWithMatch(onSubmit, comp.state, event);
     });
 
     it("should not call provided submit handler on validation errors", () => {
@@ -724,6 +813,290 @@ describe("Form", () => {
       Simulate.submit(node);
 
       sinon.assert.notCalled(onSubmit);
+    });
+
+    it("should call getUsedFormData when the omitExtraData prop is true", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+          },
+        },
+      };
+      const formData = {
+        foo: "",
+      };
+      const onSubmit = sandbox.spy();
+      const onError = sandbox.spy();
+      const omitExtraData = true;
+      const { comp, node } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+        onError,
+        omitExtraData,
+      });
+
+      sandbox.stub(comp, "getUsedFormData").returns({
+        foo: "",
+      });
+
+      Simulate.submit(node);
+
+      sinon.assert.calledOnce(comp.getUsedFormData);
+    });
+  });
+
+  describe("getUsedFormData", () => {
+    it("should just return the single input form value", () => {
+      const schema = {
+        title: "A single-field form",
+        type: "string",
+      };
+      const formData = "foo";
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const result = comp.getUsedFormData(formData, []);
+      expect(result).eql("foo");
+    });
+
+    it("should return the root level array", () => {
+      const schema = {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      };
+      const formData = ["a", "b"];
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const result = comp.getUsedFormData(formData, []);
+      expect(result).eql(["a", "b"]);
+    });
+
+    it("should call getUsedFormData with data from fields in event", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: { type: "string" },
+        },
+      };
+      const formData = {
+        foo: "bar",
+      };
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const result = comp.getUsedFormData(formData, ["foo"]);
+      expect(result).eql({ foo: "bar" });
+    });
+
+    it("unused form values should be omitted", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: { type: "string" },
+          baz: { type: "string" },
+          list: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                details: { type: "string" },
+              },
+            },
+          },
+        },
+      };
+
+      const formData = {
+        foo: "bar",
+        baz: "buzz",
+        list: [
+          { title: "title0", details: "details0" },
+          { title: "title1", details: "details1" },
+        ],
+      };
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const result = comp.getUsedFormData(formData, [
+        "foo",
+        "list.0.title",
+        "list.1.details",
+      ]);
+      expect(result).eql({
+        foo: "bar",
+        list: [{ title: "title0" }, { details: "details1" }],
+      });
+    });
+  });
+
+  describe("getFieldNames()", () => {
+    it("should return an empty array for a single input form", () => {
+      const schema = {
+        type: "string",
+      };
+
+      const formData = "foo";
+
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const pathSchema = {
+        $name: "",
+      };
+
+      const fieldNames = comp.getFieldNames(pathSchema, formData);
+      expect(fieldNames).eql([]);
+    });
+
+    it("should get field names from pathSchema", () => {
+      const schema = {};
+
+      const formData = {
+        extra: {
+          foo: "bar",
+        },
+        level1: {
+          level2: "test",
+          anotherThing: {
+            anotherThingNested: "abc",
+            extra: "asdf",
+            anotherThingNested2: 0,
+          },
+        },
+        level1a: 1.23,
+      };
+
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const pathSchema = {
+        $name: "",
+        level1: {
+          $name: "level1",
+          level2: { $name: "level1.level2" },
+          anotherThing: {
+            $name: "level1.anotherThing",
+            anotherThingNested: {
+              $name: "level1.anotherThing.anotherThingNested",
+            },
+            anotherThingNested2: {
+              $name: "level1.anotherThing.anotherThingNested2",
+            },
+          },
+        },
+        level1a: {
+          $name: "level1a",
+        },
+      };
+
+      const fieldNames = comp.getFieldNames(pathSchema, formData);
+      expect(fieldNames.sort()).eql(
+        [
+          "level1a",
+          "level1.level2",
+          "level1.anotherThing.anotherThingNested",
+          "level1.anotherThing.anotherThingNested2",
+        ].sort()
+      );
+    });
+
+    it("should get field names from pathSchema with array", () => {
+      const schema = {};
+
+      const formData = {
+        address_list: [
+          {
+            street_address: "21, Jump Street",
+            city: "Babel",
+            state: "Neverland",
+          },
+          {
+            street_address: "1234 Schema Rd.",
+            city: "New York",
+            state: "Arizona",
+          },
+        ],
+      };
+
+      const onSubmit = sandbox.spy();
+      const { comp } = createFormComponent({
+        schema,
+        formData,
+        onSubmit,
+      });
+
+      const pathSchema = {
+        $name: "",
+        address_list: {
+          "0": {
+            $name: "address_list.0",
+            city: {
+              $name: "address_list.0.city",
+            },
+            state: {
+              $name: "address_list.0.state",
+            },
+            street_address: {
+              $name: "address_list.0.street_address",
+            },
+          },
+          "1": {
+            $name: "address_list.1",
+            city: {
+              $name: "address_list.1.city",
+            },
+            state: {
+              $name: "address_list.1.state",
+            },
+            street_address: {
+              $name: "address_list.1.street_address",
+            },
+          },
+        },
+      };
+
+      const fieldNames = comp.getFieldNames(pathSchema, formData);
+      expect(fieldNames.sort()).eql(
+        [
+          "address_list.0.city",
+          "address_list.0.state",
+          "address_list.0.street_address",
+          "address_list.1.city",
+          "address_list.1.state",
+          "address_list.1.street_address",
+        ].sort()
+      );
     });
   });
 
@@ -756,6 +1129,74 @@ describe("Form", () => {
           foo: "new",
         },
       });
+    });
+
+    it("should call getUsedFormData when the omitExtraData prop is true and liveOmit is true", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+          },
+        },
+      };
+      const formData = {
+        foo: "bar",
+      };
+      const onChange = sandbox.spy();
+      const omitExtraData = true;
+      const liveOmit = true;
+      const { node, comp } = createFormComponent({
+        schema,
+        formData,
+        onChange,
+        omitExtraData,
+        liveOmit,
+      });
+
+      sandbox.stub(comp, "getUsedFormData").returns({
+        foo: "",
+      });
+
+      Simulate.change(node.querySelector("[type=text]"), {
+        target: { value: "new" },
+      });
+
+      sinon.assert.calledOnce(comp.getUsedFormData);
+    });
+
+    it("should not call getUsedFormData when the omitExtraData prop is true and liveValidate is false", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          foo: {
+            type: "string",
+          },
+        },
+      };
+      const formData = {
+        foo: "bar",
+      };
+      const onChange = sandbox.spy();
+      const omitExtraData = true;
+      const liveValidate = false;
+      const { node, comp } = createFormComponent({
+        schema,
+        formData,
+        onChange,
+        omitExtraData,
+        liveValidate,
+      });
+
+      sandbox.stub(comp, "getUsedFormData").returns({
+        foo: "",
+      });
+
+      Simulate.change(node.querySelector("[type=text]"), {
+        target: { value: "new" },
+      });
+
+      sinon.assert.notCalled(comp.getUsedFormData);
     });
   });
   describe("Blur handler", () => {
@@ -1607,7 +2048,7 @@ describe("Form", () => {
           liveValidate: true,
         });
 
-        Simulate.change(node.querySelector("input[type=text]"), {
+        Simulate.change(node.querySelector("input[type=number]"), {
           target: { value: "not a number" },
         });
 
@@ -1625,7 +2066,7 @@ describe("Form", () => {
           formData: { branch: 2 },
         });
 
-        Simulate.change(node.querySelector("input[type=text]"), {
+        Simulate.change(node.querySelector("input[type=number]"), {
           target: { value: "not a number" },
         });
 
@@ -1889,6 +2330,186 @@ describe("Form", () => {
 
     it("should set attr novalidate of form", () => {
       expect(node.getAttribute("novalidate")).not.to.be.null;
+    });
+  });
+
+  describe("Custom format updates", () => {
+    it("Should update custom formats when customFormats is changed", () => {
+      const formProps = {
+        liveValidate: true,
+        formData: {
+          areaCode: "123455",
+        },
+        schema: {
+          type: "object",
+          properties: {
+            areaCode: {
+              type: "string",
+              format: "area-code",
+            },
+          },
+        },
+        uiSchema: {
+          areaCode: {
+            "ui:widget": "area-code",
+          },
+        },
+        widgets: {
+          "area-code": () => <div id="custom" />,
+        },
+      };
+
+      const { comp } = createFormComponent(formProps);
+
+      expect(comp.state.errorSchema).eql({});
+
+      setProps(comp, {
+        ...formProps,
+        customFormats: {
+          "area-code": /^\d{3}$/,
+        },
+      });
+
+      expect(comp.state.errorSchema).eql({
+        areaCode: {
+          __errors: ['should match format "area-code"'],
+        },
+      });
+    });
+  });
+
+  describe("Meta schema updates", () => {
+    it("Should update allowed meta schemas when additionalMetaSchemas is changed", () => {
+      const formProps = {
+        liveValidate: true,
+        schema: {
+          $schema: "http://json-schema.org/draft-04/schema#",
+          type: "string",
+          minLength: 8,
+          pattern: "d+",
+        },
+        formData: "short",
+        additionalMetaSchemas: [],
+      };
+
+      const { comp } = createFormComponent(formProps);
+
+      expect(comp.state.errorSchema).eql({
+        $schema: {
+          __errors: [
+            'no schema with key or ref "http://json-schema.org/draft-04/schema#"',
+          ],
+        },
+      });
+
+      setProps(comp, {
+        ...formProps,
+        additionalMetaSchemas: [
+          require("ajv/lib/refs/json-schema-draft-04.json"),
+        ],
+      });
+
+      expect(comp.state.errorSchema).eql({
+        __errors: [
+          "should NOT be shorter than 8 characters",
+          'should match pattern "d+"',
+        ],
+      });
+
+      setProps(comp, formProps);
+
+      expect(comp.state.errorSchema).eql({
+        $schema: {
+          __errors: [
+            'no schema with key or ref "http://json-schema.org/draft-04/schema#"',
+          ],
+        },
+      });
+    });
+  });
+
+  describe("Changing the tagName", () => {
+    it("should render the component using the custom tag name", () => {
+      const tagName = "SPAN";
+      const { node } = createFormComponent({ schema: {}, tagName });
+      expect(node.tagName).eql(tagName);
+    });
+  });
+
+  describe("Nested forms", () => {
+    it("should call provided submit handler with form state", () => {
+      const innerOnSubmit = sandbox.spy();
+      const outerOnSubmit = sandbox.spy();
+      let innerRef;
+
+      class ArrayTemplateWithForm extends React.Component {
+        constructor(props) {
+          super(props);
+          innerRef = createRef();
+        }
+
+        render() {
+          const innerFormProps = {
+            schema: {},
+            onSubmit: innerOnSubmit,
+          };
+
+          return (
+            <Portal>
+              <div className="array" ref={innerRef}>
+                <Form {...innerFormProps}>
+                  <button className="array-form-submit" type="submit">
+                    Submit
+                  </button>
+                </Form>
+              </div>
+            </Portal>
+          );
+        }
+      }
+
+      const outerFormProps = {
+        schema: {
+          type: "array",
+          title: "my list",
+          description: "my description",
+          items: { type: "string" },
+        },
+        formData: ["foo", "bar"],
+        ArrayFieldTemplate: ArrayTemplateWithForm,
+        onSubmit: outerOnSubmit,
+      };
+      createFormComponent(outerFormProps);
+      const arrayForm = innerRef.current.querySelector("form");
+      const arraySubmit = arrayForm.querySelector(".array-form-submit");
+
+      arraySubmit.click();
+      sinon.assert.calledOnce(innerOnSubmit);
+      sinon.assert.notCalled(outerOnSubmit);
+    });
+  });
+
+  describe("Dependency defaults", () => {
+    it("should show dependency defaults for uncontrolled components", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          firstName: { type: "string" },
+        },
+        dependencies: {
+          firstName: {
+            properties: {
+              lastName: { type: "string", default: "Norris" },
+            },
+          },
+        },
+      };
+      const { node } = createFormComponent({ schema });
+
+      Simulate.change(node.querySelector("#root_firstName"), {
+        target: { value: "Chuck" },
+      });
+      expect(node.querySelector("#root_lastName").value).eql("Norris");
     });
   });
 });

@@ -1,7 +1,7 @@
 import React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
-import { Simulate } from "react-addons-test-utils";
+import { Simulate } from "react-dom/test-utils";
 
 import validateFormData, { isValid, toErrorList } from "../src/validate";
 import { createFormComponent } from "./test_utils";
@@ -98,6 +98,128 @@ describe("Validation", () => {
       });
     });
 
+    describe("validating using custom meta schema", () => {
+      const schema = {
+        $ref: "#/definitions/Dataset",
+        $schema: "http://json-schema.org/draft-04/schema#",
+        definitions: {
+          Dataset: {
+            properties: {
+              datasetId: {
+                pattern: "\\d+",
+                type: "string",
+              },
+            },
+            required: ["datasetId"],
+            type: "object",
+          },
+        },
+      };
+      const metaSchemaDraft4 = require("ajv/lib/refs/json-schema-draft-04.json");
+      const metaSchemaDraft6 = require("ajv/lib/refs/json-schema-draft-06.json");
+
+      it("should return a validation error about meta schema when meta schema is not defined", () => {
+        const errors = validateFormData(
+          { datasetId: "some kind of text" },
+          schema
+        );
+        const errMessage =
+          'no schema with key or ref "http://json-schema.org/draft-04/schema#"';
+        expect(errors.errors[0].stack).to.equal(errMessage);
+        expect(errors.errors).to.eql([
+          {
+            stack: errMessage,
+          },
+        ]);
+        expect(errors.errorSchema).to.eql({
+          $schema: { __errors: [errMessage] },
+        });
+      });
+      it("should return a validation error about formData", () => {
+        const errors = validateFormData(
+          { datasetId: "some kind of text" },
+          schema,
+          null,
+          null,
+          [metaSchemaDraft4]
+        );
+        expect(errors.errors).to.have.lengthOf(1);
+        expect(errors.errors[0].stack).to.equal(
+          '.datasetId should match pattern "\\d+"'
+        );
+      });
+      it("should return a validation error about formData, when used with multiple meta schemas", () => {
+        const errors = validateFormData(
+          { datasetId: "some kind of text" },
+          schema,
+          null,
+          null,
+          [metaSchemaDraft4, metaSchemaDraft6]
+        );
+        expect(errors.errors).to.have.lengthOf(1);
+        expect(errors.errors[0].stack).to.equal(
+          '.datasetId should match pattern "\\d+"'
+        );
+      });
+    });
+
+    describe("validating using custom string formats", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          phone: {
+            type: "string",
+            format: "phone-us",
+          },
+        },
+      };
+
+      it("should not return a validation error if unknown string format is used", () => {
+        const result = validateFormData({ phone: "800.555.2368" }, schema);
+        expect(result.errors.length).eql(0);
+      });
+
+      it("should return a validation error about formData", () => {
+        const result = validateFormData(
+          { phone: "800.555.2368" },
+          schema,
+          null,
+          null,
+          null,
+          { "phone-us": /\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$/ }
+        );
+
+        expect(result.errors).to.have.lengthOf(1);
+        expect(result.errors[0].stack).to.equal(
+          '.phone should match format "phone-us"'
+        );
+      });
+
+      it("prop updates with new custom formats are accepted", () => {
+        const result = validateFormData(
+          { phone: "abc" },
+          {
+            type: "object",
+            properties: {
+              phone: {
+                type: "string",
+                format: "area-code",
+              },
+            },
+          },
+          null,
+          null,
+          null,
+          { "area-code": /\d{3}/ }
+        );
+
+        expect(result.errors).to.have.lengthOf(1);
+        expect(result.errors[0].stack).to.equal(
+          '.phone should match format "area-code"'
+        );
+      });
+    });
+
     describe("Custom validate function", () => {
       let errors, errorSchema;
 
@@ -134,59 +256,29 @@ describe("Validation", () => {
       });
     });
 
-    describe("toErrorList()", () => {
-      it("should convert an errorSchema into a flat list", () => {
-        expect(
-          toErrorList({
-            __errors: ["err1", "err2"],
-            a: {
-              b: {
-                __errors: ["err3", "err4"],
-              },
-            },
-            c: {
-              __errors: ["err5"],
-            },
-          })
-        ).eql([
-          { stack: "root: err1" },
-          { stack: "root: err2" },
-          { stack: "b: err3" },
-          { stack: "b: err4" },
-          { stack: "c: err5" },
-        ]);
-      });
-    });
-
-    describe("transformErrors", () => {
-      const illFormedKey = "bar.'\"[]()=+*&^%$#@!";
+    describe("Data-Url validation", () => {
       const schema = {
         type: "object",
         properties: {
-          foo: { type: "string" },
-          [illFormedKey]: { type: "string" },
+          dataUrlWithName: { type: "string", format: "data-url" },
+          dataUrlWithoutName: { type: "string", format: "data-url" },
         },
       };
-      const newErrorMessage = "Better error message";
-      const transformErrors = errors => {
-        return [Object.assign({}, errors[0], { message: newErrorMessage })];
-      };
 
-      let errors;
-
-      beforeEach(() => {
-        const result = validateFormData(
-          { foo: 42, [illFormedKey]: 41 },
-          schema,
-          undefined,
-          transformErrors
-        );
-        errors = result.errors;
+      it("Data-Url with name is accepted", () => {
+        const formData = {
+          dataUrlWithName: "data:text/plain;name=file1.txt;base64,x=",
+        };
+        const result = validateFormData(formData, schema);
+        expect(result.errors).to.have.length.of(0);
       });
 
-      it("should use transformErrors function", () => {
-        expect(errors).not.to.be.empty;
-        expect(errors[0].message).to.equal(newErrorMessage);
+      it("Data-Url without name is accepted", () => {
+        const formData = {
+          dataUrlWithoutName: "data:text/plain;base64,x=",
+        };
+        const result = validateFormData(formData, schema);
+        expect(result.errors).to.have.length.of(0);
       });
     });
 
@@ -213,6 +305,7 @@ describe("Validation", () => {
         expect(errors).to.have.length.of(1);
         expect(errors[0].name).eql("type");
         expect(errors[0].property).eql(".properties['foo'].required");
+        expect(errors[0].schemaPath).eql("#/definitions/stringArray/type"); // TODO: This schema path is wrong due to a bug in ajv; change this test when https://github.com/epoberezkin/ajv/issues/512 is fixed.
         expect(errors[0].message).eql("should be array");
       });
 
@@ -224,6 +317,62 @@ describe("Validation", () => {
           "should be array"
         );
       });
+    });
+  });
+
+  describe("toErrorList()", () => {
+    it("should convert an errorSchema into a flat list", () => {
+      expect(
+        toErrorList({
+          __errors: ["err1", "err2"],
+          a: {
+            b: {
+              __errors: ["err3", "err4"],
+            },
+          },
+          c: {
+            __errors: ["err5"],
+          },
+        })
+      ).eql([
+        { stack: "root: err1" },
+        { stack: "root: err2" },
+        { stack: "b: err3" },
+        { stack: "b: err4" },
+        { stack: "c: err5" },
+      ]);
+    });
+  });
+
+  describe("transformErrors", () => {
+    const illFormedKey = "bar.'\"[]()=+*&^%$#@!";
+    const schema = {
+      type: "object",
+      properties: {
+        foo: { type: "string" },
+        [illFormedKey]: { type: "string" },
+      },
+    };
+    const newErrorMessage = "Better error message";
+    const transformErrors = errors => {
+      return [Object.assign({}, errors[0], { message: newErrorMessage })];
+    };
+
+    let errors;
+
+    beforeEach(() => {
+      const result = validateFormData(
+        { foo: 42, [illFormedKey]: 41 },
+        schema,
+        undefined,
+        transformErrors
+      );
+      errors = result.errors;
+    });
+
+    it("should use transformErrors function", () => {
+      expect(errors).not.to.be.empty;
+      expect(errors[0].message).to.equal(newErrorMessage);
     });
   });
 
@@ -319,6 +468,9 @@ describe("Validation", () => {
 
         it("should validate a minLength field", () => {
           expect(comp.state.errors).to.have.length.of(1);
+          expect(comp.state.errors[0].schemaPath).eql(
+            "#/properties/foo/minLength"
+          );
           expect(comp.state.errors[0].message).eql(
             "should NOT be shorter than 10 characters"
           );
@@ -647,6 +799,58 @@ describe("Validation", () => {
         expect(node.querySelectorAll(".UiSchema")).to.have.length.of(1);
         expect(node.querySelector(".UiSchema").textContent).eql("bar");
         expect(node.querySelectorAll(".foo")).to.have.length.of(1);
+      });
+    });
+    describe("Custom meta schema", () => {
+      let onSubmit;
+      let onError;
+      let comp, node;
+      const formData = {
+        datasetId: "no err",
+      };
+
+      const schema = {
+        $ref: "#/definitions/Dataset",
+        $schema: "http://json-schema.org/draft-04/schema#",
+        definitions: {
+          Dataset: {
+            properties: {
+              datasetId: {
+                pattern: "\\d+",
+                type: "string",
+              },
+            },
+            required: ["datasetId"],
+            type: "object",
+          },
+        },
+      };
+
+      beforeEach(() => {
+        onSubmit = sandbox.spy();
+        onError = sandbox.spy();
+        const withMetaSchema = createFormComponent({
+          schema,
+          formData,
+          liveValidate: true,
+          additionalMetaSchemas: [
+            require("ajv/lib/refs/json-schema-draft-04.json"),
+          ],
+          onSubmit,
+          onError,
+        });
+        comp = withMetaSchema.comp;
+        node = withMetaSchema.node;
+      });
+      it("should be used to validate schema", () => {
+        expect(node.querySelectorAll(".errors li")).to.have.length.of(1);
+        expect(comp.state.errors).to.have.lengthOf(1);
+        expect(comp.state.errors[0].message).eql(`should match pattern "\\d+"`);
+        Simulate.change(node.querySelector("input"), {
+          target: { value: "1234" },
+        });
+        expect(node.querySelectorAll(".errors li")).to.have.length.of(0);
+        expect(comp.state.errors).to.have.lengthOf(0);
       });
     });
   });

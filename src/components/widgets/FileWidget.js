@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 
-import { dataURItoBlob, shouldRender, setState } from "../../utils";
+import { dataURItoBlob, shouldRender } from "../../utils";
 
 function addNameToDataURL(dataURL, name) {
-  return dataURL.replace(";base64", `;name=${name};base64`);
+  return dataURL.replace(";base64", `;name=${encodeURIComponent(name)};base64`);
 }
 
 function processFile(file) {
@@ -79,7 +79,7 @@ class FileWidget extends Component {
         values: filesInfo.map(fileInfo => fileInfo.dataURL),
         filesInfo,
       };
-      setState(this, state, () => {
+      this.setState(state, () => {
         if (multiple) {
           onChange(state.values);
         } else {
@@ -90,7 +90,7 @@ class FileWidget extends Component {
   };
 
   render() {
-    const { multiple, id, readonly, disabled, autofocus } = this.props;
+    const { multiple, id, readonly, disabled, autofocus, options } = this.props;
     const { filesInfo } = this.state;
     return (
       <div>
@@ -104,6 +104,7 @@ class FileWidget extends Component {
             defaultValue=""
             autoFocus={autofocus}
             multiple={multiple}
+            accept={options.accept}
           />
         </p>
         <FilesInfo filesInfo={filesInfo} />
