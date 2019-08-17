@@ -873,7 +873,7 @@ describe("Form", () => {
           type: "string",
         },
       };
-      const formData = [];
+      const formData = ["a", "b"];
       const onSubmit = sandbox.spy();
       const { comp } = createFormComponent({
         schema,
@@ -882,7 +882,7 @@ describe("Form", () => {
       });
 
       const result = comp.getUsedFormData(formData, []);
-      expect(result).eql([]);
+      expect(result).eql(["a", "b"]);
     });
 
     it("should call getUsedFormData with data from fields in event", () => {
