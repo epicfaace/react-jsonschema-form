@@ -1,16 +1,12 @@
-import React from 'react';
-
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-
-import { WidgetProps } from '@rjsf/core';
+import React from "react";
+import { Checkbox } from "@fluentui/react";
+import { WidgetProps } from "@rjsf/core";
 
 const CheckboxWidget = (props: WidgetProps) => {
   const {
     id,
     value,
-    required,
+    // required,
     disabled,
     readonly,
     label,
@@ -20,7 +16,10 @@ const CheckboxWidget = (props: WidgetProps) => {
     onFocus,
   } = props;
 
-  const _onChange = ({}, checked: boolean) => onChange(checked);
+  const _onChange = React.useCallback(({}, checked?: boolean): void => {
+    onChange(checked);
+  }, []);
+
   const _onBlur = ({
     target: { value },
   }: React.FocusEvent<HTMLButtonElement>) => onBlur(id, value);
@@ -29,23 +28,18 @@ const CheckboxWidget = (props: WidgetProps) => {
   }: React.FocusEvent<HTMLButtonElement>) => onFocus(id, value);
 
   return (
-    <FormControl fullWidth={true} required={required}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            id={id}
-            checked={typeof value === 'undefined' ? false : value}
-            required={required}
-            disabled={disabled || readonly}
-            autoFocus={autofocus}
-            onChange={_onChange}
-            onBlur={_onBlur}
-            onFocus={_onFocus}
-          />
-        }
+    <>
+      <Checkbox
+        id={id}
         label={label}
+        disabled={disabled || readonly}
+        autoFocus={autofocus}
+        onBlur={_onBlur}
+        onFocus={_onFocus}
+        checked={typeof value === "undefined" ? false : value}
+        onChange={_onChange}
       />
-    </FormControl>
+    </>
   );
 };
 
