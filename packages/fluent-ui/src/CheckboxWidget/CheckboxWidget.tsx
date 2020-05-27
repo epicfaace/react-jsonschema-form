@@ -6,7 +6,7 @@ const CheckboxWidget = (props: WidgetProps) => {
   const {
     id,
     value,
-    // required,
+    required,
     disabled,
     readonly,
     label,
@@ -27,18 +27,22 @@ const CheckboxWidget = (props: WidgetProps) => {
     target: { value },
   }: React.FocusEvent<HTMLButtonElement>) => onFocus(id, value);
 
+  const requiredSymbol = required ? "*" : "";
+
   return (
     <>
-      <Checkbox
-        id={id}
-        label={label}
-        disabled={disabled || readonly}
-        autoFocus={autofocus}
-        onBlur={_onBlur}
-        onFocus={_onFocus}
-        checked={typeof value === "undefined" ? false : value}
-        onChange={_onChange}
-      />
+      <div className="col-sm-6">
+        <Checkbox
+          id={id}
+          label={label + requiredSymbol}
+          disabled={disabled || readonly}
+          autoFocus={autofocus}
+          onBlur={_onBlur}
+          onFocus={_onFocus}
+          checked={typeof value === "undefined" ? false : value}
+          onChange={_onChange}
+        />
+      </div>
     </>
   );
 };
