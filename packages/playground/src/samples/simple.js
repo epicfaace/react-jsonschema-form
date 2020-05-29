@@ -6,8 +6,9 @@ module.exports = {
     required: ["firstName", "lastName"],
     properties: {
       firstName: {
-        type: "number",
+        type: "string",
         title: "First name",
+        default: "Chuck",
       },
       lastName: {
         type: "string",

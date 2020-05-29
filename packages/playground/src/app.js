@@ -369,7 +369,7 @@ class Playground extends Component {
         alert("Unable to load form setup data.");
       }
     } else {
-      this.load({ theme: Object.keys(this.props.themes)[2] });
+      this.load({ theme: Object.keys(this.props.themes)[0] });
     }
   }
 
