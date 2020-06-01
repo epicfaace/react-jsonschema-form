@@ -72,7 +72,7 @@ const CheckboxesWidget = ({
   }: React.FocusEvent<HTMLButtonElement>) => onFocus(id, value);
 
   return (
-    <div>
+    <>
       <Label styles={styles}>{label || schema.title}</Label>
       {(enumOptions as any).map((option: any, index: number) => {
         const checked = value.indexOf(option.value) !== -1;
@@ -93,7 +93,7 @@ const CheckboxesWidget = ({
         );
       })}
       <Label styles={styles_red}>{(rawErrors || []).join("\n")}</Label>
-    </div>
+    </>
   );
 };
 
