@@ -12,6 +12,14 @@ const styles = {
   ],
 };
 
+const styles_red = {
+  root: [
+    {
+      color: "#FF0000",
+    },
+  ],
+};
+
 const selectValue = (value: any, selected: any, all: any) => {
   const at = all.indexOf(value);
   const updated = selected.slice(0, at).concat(value, selected.slice(at));
@@ -38,6 +46,7 @@ const CheckboxesWidget = ({
   onChange,
   onBlur,
   onFocus,
+  rawErrors = [],
 }: WidgetProps) => {
   const { enumOptions, enumDisabled } = options;
 
@@ -63,7 +72,7 @@ const CheckboxesWidget = ({
   }: React.FocusEvent<HTMLButtonElement>) => onFocus(id, value);
 
   return (
-    <>
+    <div>
       <Label styles={styles}>{label || schema.title}</Label>
       {(enumOptions as any).map((option: any, index: number) => {
         const checked = value.indexOf(option.value) !== -1;
@@ -83,7 +92,8 @@ const CheckboxesWidget = ({
           />
         );
       })}
-    </>
+      <Label styles={styles_red}>{(rawErrors || []).join("\n")}</Label>
+    </div>
   );
 };
 
