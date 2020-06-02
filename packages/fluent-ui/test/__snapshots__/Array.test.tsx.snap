@@ -61,20 +61,6 @@ exports[`array fields array 1`] = `
                     >
                       
                     </i>
-                    <i
-                      aria-hidden={true}
-                      className="ms-Icon root-37 css-49 ms-Button-menuIcon array-item-add menuIcon-45"
-                      data-icon-name="ChevronDown"
-                      onClick={[Function]}
-                      role="presentation"
-                      style={
-                        Object {
-                          "fontFamily": "\\"FabricMDL2Icons\\"",
-                        }
-                      }
-                    >
-                      
-                    </i>
                   </span>
                 </button>
               </div>
@@ -90,7 +76,7 @@ exports[`array fields array 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-50"
+        className="ms-Button ms-Button--primary root-49"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -108,7 +94,7 @@ exports[`array fields array 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-51"
+              className="ms-Button-label label-50"
               id="id__4"
             >
               Submit
@@ -193,7 +179,7 @@ exports[`array fields checkboxes 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-50"
+        className="ms-Button ms-Button--primary root-49"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -211,7 +197,7 @@ exports[`array fields checkboxes 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-51"
+              className="ms-Button-label label-50"
               id="id__16"
             >
               Submit
@@ -272,18 +258,18 @@ exports[`array fields fixed array 1`] = `
                       }
                     >
                       <div
-                        className="ms-TextField is-required root-53"
+                        className="ms-TextField is-required root-52"
                       >
                         <div
                           className="ms-TextField-wrapper"
                         >
                           <div
-                            className="ms-TextField-fieldGroup fieldGroup-54"
+                            className="ms-TextField-fieldGroup fieldGroup-53"
                           >
                             <input
                               aria-invalid={false}
                               autoFocus={false}
-                              className="ms-TextField-field field-55"
+                              className="ms-TextField-field field-54"
                               disabled={false}
                               id="root_0"
                               name="nodejs"
@@ -329,18 +315,18 @@ exports[`array fields fixed array 1`] = `
                       }
                     >
                       <div
-                        className="ms-TextField is-required root-53"
+                        className="ms-TextField is-required root-52"
                       >
                         <div
                           className="ms-TextField-wrapper"
                         >
                           <div
-                            className="ms-TextField-fieldGroup fieldGroup-54"
+                            className="ms-TextField-fieldGroup fieldGroup-53"
                           >
                             <input
                               aria-invalid={false}
                               autoFocus={false}
-                              className="ms-TextField-field field-55"
+                              className="ms-TextField-field field-54"
                               disabled={false}
                               id="root_1"
                               name="nodejs"
@@ -372,7 +358,7 @@ exports[`array fields fixed array 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-50"
+        className="ms-Button ms-Button--primary root-49"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -390,7 +376,7 @@ exports[`array fields fixed array 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-51"
+              className="ms-Button-label label-50"
               id="id__13"
             >
               Submit

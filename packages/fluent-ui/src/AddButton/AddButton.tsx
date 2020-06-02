@@ -6,11 +6,8 @@ import { IconButton, IIconProps } from "@fluentui/react";
 
 const addIcon: IIconProps = { iconName: "BoxAdditionSolid" };
 
-const AddButton: React.FC<AddButtonProps> = props => (
-  <IconButton
-    menuIconProps={props}
-    iconProps={addIcon}
-    color="secondary"></IconButton>
+const AddButton: React.FC<AddButtonProps> = () => (
+  <IconButton iconProps={addIcon} color="secondary"></IconButton>
 );
 
 export default AddButton;
