@@ -34,38 +34,47 @@ exports[`array fields array 1`] = `
                 className="MuiBox-root MuiBox-root-133"
               >
                 <button
-                  className="MuiButtonBase-root MuiButton-root MuiButton-text array-item-add MuiButton-textSecondary"
-                  disabled={false}
-                  onBlur={[Function]}
+                  className="ms-Button ms-Button--icon root-40"
+                  data-is-focusable={true}
                   onClick={[Function]}
-                  onDragLeave={[Function]}
-                  onFocus={[Function]}
                   onKeyDown={[Function]}
+                  onKeyPress={[Function]}
                   onKeyUp={[Function]}
                   onMouseDown={[Function]}
-                  onMouseLeave={[Function]}
                   onMouseUp={[Function]}
-                  onTouchEnd={[Function]}
-                  onTouchMove={[Function]}
-                  onTouchStart={[Function]}
-                  tabIndex={0}
                   type="button"
                 >
                   <span
-                    className="MuiButton-label"
+                    className="ms-Button-flexContainer flexContainer-41"
+                    data-automationid="splitbuttonprimary"
                   >
-                    <svg
-                      aria-hidden="true"
-                      className="MuiSvgIcon-root"
-                      focusable="false"
+                    <i
+                      aria-hidden={true}
+                      className="ms-Icon root-37 css-48 ms-Button-icon icon-43"
+                      data-icon-name="BoxAdditionSolid"
                       role="presentation"
-                      viewBox="0 0 24 24"
+                      style={
+                        Object {
+                          "fontFamily": "\\"FabricMDL2Icons-11\\"",
+                        }
+                      }
                     >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                      />
-                    </svg>
-                     Add Item
+                      
+                    </i>
+                    <i
+                      aria-hidden={true}
+                      className="ms-Icon root-37 css-49 ms-Button-menuIcon array-item-add menuIcon-45"
+                      data-icon-name="ChevronDown"
+                      onClick={[Function]}
+                      role="presentation"
+                      style={
+                        Object {
+                          "fontFamily": "\\"FabricMDL2Icons\\"",
+                        }
+                      }
+                    >
+                      
+                    </i>
                   </span>
                 </button>
               </div>
@@ -81,7 +90,7 @@ exports[`array fields array 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-40"
+        className="ms-Button ms-Button--primary root-50"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -99,8 +108,8 @@ exports[`array fields array 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-44"
-              id="id__1"
+              className="ms-Button-label label-51"
+              id="id__4"
             >
               Submit
             </span>
@@ -184,7 +193,7 @@ exports[`array fields checkboxes 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-40"
+        className="ms-Button ms-Button--primary root-50"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -202,8 +211,8 @@ exports[`array fields checkboxes 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-44"
-              id="id__13"
+              className="ms-Button-label label-51"
+              id="id__16"
             >
               Submit
             </span>
@@ -233,7 +242,7 @@ exports[`array fields fixed array 1`] = `
       className="MuiPaper-root MuiPaper-elevation2 MuiPaper-rounded"
     >
       <div
-        className="MuiBox-root MuiBox-root-174"
+        className="MuiBox-root MuiBox-root-134"
       >
         <div />
         <div
@@ -246,13 +255,13 @@ exports[`array fields fixed array 1`] = `
               className="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-true"
             >
               <div
-                className="MuiBox-root MuiBox-root-175"
+                className="MuiBox-root MuiBox-root-135"
               >
                 <div
                   className="MuiPaper-root MuiPaper-elevation2 MuiPaper-rounded"
                 >
                   <div
-                    className="MuiBox-root MuiBox-root-176"
+                    className="MuiBox-root MuiBox-root-136"
                   >
                     <div
                       className="ms-Grid-col ms-sm12  field field-string"
@@ -263,18 +272,18 @@ exports[`array fields fixed array 1`] = `
                       }
                     >
                       <div
-                        className="ms-TextField is-required root-49"
+                        className="ms-TextField is-required root-53"
                       >
                         <div
                           className="ms-TextField-wrapper"
                         >
                           <div
-                            className="ms-TextField-fieldGroup fieldGroup-50"
+                            className="ms-TextField-fieldGroup fieldGroup-54"
                           >
                             <input
                               aria-invalid={false}
                               autoFocus={false}
-                              className="ms-TextField-field field-51"
+                              className="ms-TextField-field field-55"
                               disabled={false}
                               id="root_0"
                               name="nodejs"
@@ -303,13 +312,13 @@ exports[`array fields fixed array 1`] = `
               className="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-true"
             >
               <div
-                className="MuiBox-root MuiBox-root-177"
+                className="MuiBox-root MuiBox-root-137"
               >
                 <div
                   className="MuiPaper-root MuiPaper-elevation2 MuiPaper-rounded"
                 >
                   <div
-                    className="MuiBox-root MuiBox-root-178"
+                    className="MuiBox-root MuiBox-root-138"
                   >
                     <div
                       className="ms-Grid-col ms-sm12  field field-number"
@@ -320,18 +329,18 @@ exports[`array fields fixed array 1`] = `
                       }
                     >
                       <div
-                        className="ms-TextField is-required root-49"
+                        className="ms-TextField is-required root-53"
                       >
                         <div
                           className="ms-TextField-wrapper"
                         >
                           <div
-                            className="ms-TextField-fieldGroup fieldGroup-50"
+                            className="ms-TextField-fieldGroup fieldGroup-54"
                           >
                             <input
                               aria-invalid={false}
                               autoFocus={false}
-                              className="ms-TextField-field field-51"
+                              className="ms-TextField-field field-55"
                               disabled={false}
                               id="root_1"
                               name="nodejs"
@@ -363,7 +372,7 @@ exports[`array fields fixed array 1`] = `
       className="ms-Grid-col ms-sm12"
     >
       <button
-        className="ms-Button ms-Button--primary root-40"
+        className="ms-Button ms-Button--primary root-50"
         data-is-focusable={true}
         onClick={[Function]}
         onKeyDown={[Function]}
@@ -381,8 +390,8 @@ exports[`array fields fixed array 1`] = `
             className="ms-Button-textContainer textContainer-42"
           >
             <span
-              className="ms-Button-label label-44"
-              id="id__10"
+              className="ms-Button-label label-51"
+              id="id__13"
             >
               Submit
             </span>
