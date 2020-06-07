@@ -1,16 +1,11 @@
-import React from 'react';
-
-import FormControl from '@material-ui/core/FormControl';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-
-import { WidgetProps } from '@rjsf/core';
-import { utils } from '@rjsf/core';
+import React from "react";
+import { Label, Dropdown } from "@fluentui/react";
+import { WidgetProps } from "@rjsf/core";
+import { utils } from "@rjsf/core";
 
 const { asNumber, guessType } = utils;
 
-const nums = new Set(['number', 'integer']);
+const nums = new Set(["number", "integer"]);
 
 /**
  * This is a silly limitation in the DOM where option change event values are
@@ -19,26 +14,25 @@ const nums = new Set(['number', 'integer']);
 const processValue = (schema: any, value: any) => {
   // "enum" is a reserved word, so only "type" and "items" can be destructured
   const { type, items } = schema;
-  if (value === '') {
+  if (value === "") {
     return undefined;
-  } else if (type === 'array' && items && nums.has(items.type)) {
+  } else if (type === "array" && items && nums.has(items.type)) {
     return value.map(asNumber);
-  } else if (type === 'boolean') {
-    return value === 'true';
-  } else if (type === 'number') {
+  } else if (type === "boolean") {
+    return value === "true";
+  } else if (type === "number") {
     return asNumber(value);
   }
 
   // If type is undefined, but an enum is present, try and infer the type from
   // the enum values
   if (schema.enum) {
-    if (schema.enum.every((x: any) => guessType(x) === 'number')) {
+    if (schema.enum.every((x: any) => guessType(x) === "number")) {
       return asNumber(value);
-    } else if (schema.enum.every((x: any) => guessType(x) === 'boolean')) {
-      return value === 'true';
+    } else if (schema.enum.every((x: any) => guessType(x) === "boolean")) {
+      return value === "true";
     }
   }
-
   return value;
 };
 
@@ -59,12 +53,8 @@ const SelectWidget = ({
 }: WidgetProps) => {
   const { enumOptions, enumDisabled } = options;
 
-  const emptyValue = multiple ? [] : '';
+  const _onChange = ({}, value: any) => onChange(value.key);
 
-  const _onChange = ({
-    target: { value },
-  }: React.ChangeEvent<{ name?: string; value: unknown }>) =>
-    onChange(processValue(schema, value));
   const _onBlur = ({ target: { value } }: React.FocusEvent<HTMLInputElement>) =>
     onBlur(id, processValue(schema, value));
   const _onFocus = ({
@@ -72,36 +62,26 @@ const SelectWidget = ({
   }: React.FocusEvent<HTMLInputElement>) =>
     onFocus(id, processValue(schema, value));
 
+  const dropDown = (enumOptions as any[]) || [];
+
+  const newOptions = dropDown.map(option => ({
+    key: option.value,
+    text: option.label,
+  }));
+
   return (
-    <FormControl
-      fullWidth={true}
-      //error={!!rawErrors}
-      required={required}
-    >
-      <InputLabel shrink={true} htmlFor={id}>
-        {label || schema.title}
-      </InputLabel>
-      <Select
-        multiple={typeof multiple === 'undefined' ? false : multiple}
-        value={typeof value === 'undefined' ? emptyValue : value}
+    <>
+      <Label>{label || schema.title}</Label>
+      <Dropdown
+        multiSelect={typeof multiple === "undefined" ? false : multiple}
+        defaultSelectedKey={value}
         required={required}
+        options={newOptions}
         disabled={disabled || readonly}
-        autoFocus={autofocus}
         onChange={_onChange}
         onBlur={_onBlur}
-        onFocus={_onFocus}
-      >
-        {(enumOptions as any).map(({ value, label }: any, i: number) => {
-          const disabled: any =
-            enumDisabled && (enumDisabled as any).indexOf(value) != -1;
-          return (
-            <MenuItem key={i} value={value} disabled={disabled}>
-              {label}
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </FormControl>
+        onFocus={_onFocus}></Dropdown>
+    </>
   );
 };
 
