@@ -107,7 +107,7 @@ exports[`array fields checkboxes 1`] = `
     }
   >
     <label
-      className="ms-Label root-60"
+      className="ms-Label root-61"
     />
     <div
       className="ms-Dropdown-container"
@@ -117,9 +117,9 @@ exports[`array fields checkboxes 1`] = `
         aria-expanded="false"
         aria-haspopup="listbox"
         aria-required={false}
-        className="ms-Dropdown dropdown-61"
+        className="ms-Dropdown dropdown-62"
         data-is-focusable={true}
-        id="Dropdown16"
+        id="Dropdown34"
         onBlur={[Function]}
         onChange={[Function]}
         onClick={[Function]}
@@ -134,15 +134,15 @@ exports[`array fields checkboxes 1`] = `
           aria-atomic={true}
           aria-invalid={false}
           aria-live="polite"
-          className="ms-Dropdown-title ms-Dropdown-titleIsPlaceHolder title-62"
-          id="Dropdown16-option"
+          className="ms-Dropdown-title ms-Dropdown-titleIsPlaceHolder title-63"
+          id="Dropdown34-option"
         />
         <span
-          className="ms-Dropdown-caretDownWrapper caretDownWrapper-63"
+          className="ms-Dropdown-caretDownWrapper caretDownWrapper-64"
         >
           <i
             aria-hidden={true}
-            className="ms-Dropdown-caretDown caretDown-78"
+            className="ms-Dropdown-caretDown caretDown-79"
             data-icon-name="ChevronDown"
           >
             
@@ -176,7 +176,7 @@ exports[`array fields checkboxes 1`] = `
           >
             <span
               className="ms-Button-label label-50"
-              id="id__17"
+              id="id__35"
             >
               Submit
             </span>
