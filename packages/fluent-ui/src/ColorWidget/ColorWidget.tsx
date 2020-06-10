@@ -11,15 +11,6 @@ import { WidgetProps } from "@rjsf/core";
 import _pick from "lodash/pick";
 import { useConstCallback } from "@uifabric/react-hooks";
 
-const colorPickerStyles: Partial<IColorPickerStyles> = {
-  panel: { padding: 12 },
-  root: {
-    maxWidth: 352,
-    minWidth: 352,
-  },
-  colorRectangle: { height: 268 },
-};
-
 const styles_red = {
   // TODO: get this color from theme.
   color: "rgb(164, 38, 44)",
@@ -33,6 +24,7 @@ const allowedProps = [
   "componentRef",
   "color",
   "strings",
+  "onChange",
   "alphaType",
   "alphaSliderHidden",
   "hexLabel",
@@ -43,6 +35,7 @@ const allowedProps = [
   "className",
   "theme",
   "styles",
+  "showPreview",
 ];
 
 const ColorWidget = ({
@@ -59,7 +52,7 @@ const ColorWidget = ({
   onFocus,
 }: WidgetProps) => {
   const { enumOptions, enumDisabled } = options;
-  
+
   const updateColor = (ev: any, colorObj: IColor) => {
     onChange(colorObj.hex);
   };
@@ -73,11 +66,10 @@ const ColorWidget = ({
         {required && <span style={styles_red}>&nbsp;*</span>}
       </Label>
       <ColorPicker
-        color={getColorFromString(value)}
+        color={getColorFromString(value) as any}
         onChange={updateColor}
         alphaType={"alpha"}
         showPreview={true}
-        styles={colorPickerStyles}
         {...uiProps}
       />
     </>
