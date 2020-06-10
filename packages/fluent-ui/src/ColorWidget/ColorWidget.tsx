@@ -59,14 +59,10 @@ const ColorWidget = ({
   onFocus,
 }: WidgetProps) => {
   const { enumOptions, enumDisabled } = options;
-
-  const white = getColorFromString("#ffffff")!;
-  const [color, setColor] = React.useState(white);
   
-  const updateColor = useConstCallback((ev: any, colorObj: IColor) => {
-    setColor(colorObj);
+  const updateColor = (ev: any, colorObj: IColor) => {
     onChange(colorObj.hex);
-  });
+  };
 
   const uiProps = _pick(options.props || {}, allowedProps);
 
@@ -77,7 +73,7 @@ const ColorWidget = ({
         {required && <span style={styles_red}>&nbsp;*</span>}
       </Label>
       <ColorPicker
-        color={color}
+        color={getColorFromString(value)}
         onChange={updateColor}
         alphaType={"alpha"}
         showPreview={true}
