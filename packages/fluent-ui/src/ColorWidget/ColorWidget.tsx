@@ -62,11 +62,7 @@ const ColorWidget = ({
 
   const white = getColorFromString("#ffffff")!;
   const [color, setColor] = React.useState(white);
-  const [alphaType, setAlphaType] = React.useState<
-    IColorPickerProps["alphaType"]
-  >("alpha");
-  const [showPreview] = React.useState(true);
-
+  
   const updateColor = useConstCallback((ev: any, colorObj: IColor) => {
     setColor(colorObj);
     onChange(colorObj.hex);
@@ -83,8 +79,8 @@ const ColorWidget = ({
       <ColorPicker
         color={color}
         onChange={updateColor}
-        alphaType={alphaType}
-        showPreview={showPreview}
+        alphaType={"alpha"}
+        showPreview={true}
         styles={colorPickerStyles}
         {...uiProps}
       />
