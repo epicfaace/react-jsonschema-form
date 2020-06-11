@@ -6,10 +6,6 @@ import TextWidget from "../TextWidget";
 
 const PasswordWidget = (props: WidgetProps) => {
   const uiProps: any = props.options["props"] || {};
-
-  const onChange = (value: any) => {
-    props.onChange(value);
-  };
   let options = {
     ...props.options,
     props: {
@@ -17,13 +13,12 @@ const PasswordWidget = (props: WidgetProps) => {
       ...uiProps,
     },
   };
-  // TODO: rows and columns.
   return (
     <TextWidget
       {...props}
       options={options}
       value={props.value}
-      onChange={onChange}
+      onChange={props.onChange}
       {...uiProps}
     />
   );
