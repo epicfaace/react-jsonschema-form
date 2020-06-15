@@ -8,7 +8,7 @@ const addIcon: IIconProps = { iconName: "Add" };
 
 const AddButton = (props: AddButtonProps) => (
   <CommandBarButton
-    style={{ height: "32px" }}
+    style={{ height: "fit-content" }}
     iconProps={addIcon}
     text="Add item"
     className={props.className}
