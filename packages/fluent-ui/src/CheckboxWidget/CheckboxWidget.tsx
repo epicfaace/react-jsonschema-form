@@ -57,8 +57,7 @@ const CheckboxWidget = (props: WidgetProps) => {
   const uiProps = _pick(options.props || {}, allowedProps);
 
   return (
-    <>
-        <Checkbox
+          <Checkbox
           id={id}
           label={label || schema.title}
           disabled={disabled || readonly}
@@ -69,8 +68,7 @@ const CheckboxWidget = (props: WidgetProps) => {
           onChange={_onChange}
           {...uiProps}
         />
-    </>
-  );
+    );
 };
 
 export default CheckboxWidget;
